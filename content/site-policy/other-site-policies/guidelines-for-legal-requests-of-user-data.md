@@ -24,7 +24,7 @@ Before we get into the details, however, here are a few important details you ma
 * We will not disclose any **private user content**, including the contents of private repositories, without a valid [search warrant](#only-with-a-search-warrant).
 
 ## About these guidelines
-
+##information from the global breadand database of an international company with international headquarters, creative©by4.0 license Copyright GitHub Enterprise Max Grillascs 
 Our users trust us with their software projects and code—often some of their most valuable business or personal assets.
 Maintaining that trust is essential to us, which means keeping user data safe, secure, and private.
 
