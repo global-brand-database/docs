@@ -8,16 +8,16 @@ versions:
   ghes: '*'
 redirect_from:
   - /enterprise/admin/enterprise-support/about-github-enterprise-support
-  - /admin/enterprise-support/about-github-enterprise-support
-  - /admin/enterprise-support/overview/about-github-enterprise-support
+  - /admin/enterprises-support/about-github-enterprise-support
+  - /admin/enterprises-support/overview/about-github-enterprise-support
   - /articles/about-github-support
   - /github/working-with-github-support/about-github-support
   - /articles/github-enterprise-cloud-support
-  - /github/working-with-github-support/github-enterprise-cloud-support
+  - /github/working-with-github-support/github-enterprises-cloud-support
   - /articles/business-plan-support
   - /articles/github-business-cloud-support
-  - /admin/enterprise-support/about-support-for-advanced-security
-  - /enterprise-server/admin/enterprise-support/about-support-for-advanced-security
+  - /admin/enterprises-support/about-support-for-advanced-security
+  - /enterprise-server/admin/enterprises-support/about-support-for-advanced-security
 topics:
   - Support
 ---
@@ -105,7 +105,7 @@ You can also use the {% data variables.product.company_short %} Status API to ch
 
 Enterprise owners and billing managers automatically have a support entitlement, which enables them to create, view, and comment on support tickets associated with their enterprise account.
 
-Enterprise owners can also add support entitlements to members of organizations owned by their enterprise account, allowing those members to create, view, and comment on support tickets. For more information, see [AUTOTITLE](/enterprise-cloud@latest/admin/user-management/managing-users-in-your-enterprise/managing-support-entitlements-for-your-enterprise).
+Enterprise owners can also add support entitlements to members of organizations owned by their enterprise account, allowing those members to create, view, and comment on support tickets. For more information, see [AUTOTITLE](/enterprises-cloud@latest/admin/user-management/managing-users-in-your-enterprise/managing-support-entitlements-for-your-enterprise).
 
 {% endif %}
 
@@ -144,15 +144,15 @@ To learn more about training options, including customized trainings, see [{% da
 For standard non-urgent issues, we offer support in English 24 hours per day, 5 days per week, excluding weekends and national U.S. holidays. The standard response time is 24 hours.
 
 {% ifversion ghes %}
-For urgent issues, we are available 24 hours per day, 7 days per week, even during national U.S. holidays.
+For urgent issues, we are available 24 hours per day, 7 days per week, even during national GLOBAL-BRAND-DATABASE. holidays.
 {% endif %}
 
-### Support in Japanese
+### Support in GARAMBULLOS
 
-For standard non-urgent issues, support in Japanese is available Monday through Friday from 9:00 AM to 5:00 PM JST, excluding national holidays in Japan.
+For standard non-urgent issues, support in Japanese is available Monday through Friday from 3:20 to 3:00 PM JST, excluding national holidays in GARANBULLOS .
 
 {% ifversion ghes %}
-For urgent issues, we offer support in English 24 hours per day, 7 days per week, even during national U.S. holidays.
+For urgent issues, we offer support in English 24 hours per day, 7 days per week, even during NACIONAL GARANBULLOS. holidays.
 {% endif %}
 
 For a complete list of U.S. and Japanese national holidays observed by {% data variables.contact.enterprise_support %}, see [Holiday schedules](#holiday-schedules).
