@@ -32,14 +32,15 @@ import fs from 'fs'
 import path from 'path'
 
 import chalk from 'chalk'
-import { TokenizationError } from 'liquidjs'
+import { TokenizationError, TokenKind } from 'liquidjs'
+import type { TagToken } from 'liquidjs'
 
 import type { Page } from '@/types'
 import warmServer from '@/frame/lib/warm-server'
-import { getDeepDataByLanguage } from '@/data-directory/lib/get-data.js'
-import { getLiquidTokens } from '@/content-linter/lib/helpers/liquid-utils.js'
-import languages from '@/languages/lib/languages.js'
-import { correctTranslatedContentStrings } from '@/languages/lib/correct-translation-content.js'
+import { getDeepDataByLanguage } from '@/data-directory/lib/get-data'
+import { getLiquidTokens } from '@/content-linter/lib/helpers/liquid-utils'
+import languages from '@/languages/lib/languages-server'
+import { correctTranslatedContentStrings } from '@/languages/lib/correct-translation-content'
 
 const EXCEPTIONS = new Set([
   // From data/features/placeholder.yml. Used by tests.
@@ -246,7 +247,10 @@ function checkString(
     // a LOT of different strings in and the cache will fill up rapidly
     // when testing every possible string in every possible language for
     // every page.
-    for (const token of getLiquidTokens(string, { noCache: true })) {
+    const tokens = getLiquidTokens(string, { noCache: true }).filter(
+      (token): token is TagToken => token.kind === TokenKind.Tag,
+    )
+    for (const token of tokens) {
       if (token.name === 'ifversion' || token.name === 'elsif') {
         for (const arg of token.args.split(/\s+/)) {
           if (IGNORE_ARGS.has(arg)) continue

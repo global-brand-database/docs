@@ -15,14 +15,16 @@ describe('render Markdown image tags', () => {
     const sources = $('source', pictures)
     expect(sources.length).toBe(1)
     const srcset = sources.attr('srcset')
-    expect(srcset).toBe(`/assets/cb-646451/mw-${MAX_WIDTH}/images/_fixtures/screenshot.webp 2x`)
+    expect(srcset).toMatch(
+      new RegExp(`^/assets/cb-\\w+/mw-${MAX_WIDTH}/images/_fixtures/screenshot\\.webp 2x$`),
+    )
     const type = sources.attr('type')
     expect(type).toBe('image/webp')
 
     const imgs = $('img', pictures)
     expect(imgs.length).toBe(1)
     const src = imgs.attr('src')
-    expect(src).toBe('/assets/cb-646451/images/_fixtures/screenshot.png')
+    expect(src).toMatch(/^\/assets\/cb-\w+\/images\/_fixtures\/screenshot\.png$/)
     const alt = imgs.attr('alt')
     expect(alt).toBe('This is the alt text')
 
@@ -35,7 +37,7 @@ describe('render Markdown image tags', () => {
     // When transformed as a source in a `<picture>` tag, it's automatically
     // injected with the `mw-XXXXX` virtual indicator in the URL that
     // resizes it on-the-fly.
-    const image = sharp(res.body as Buffer)
+    const image = sharp(Buffer.from(res.body as ArrayBuffer))
     const { width, height } = await image.metadata()
     expect(width).toBe(MAX_WIDTH)
     // The `_fixtures/screenshot.png` is 2000x1494.

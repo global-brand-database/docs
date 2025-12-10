@@ -1,11 +1,14 @@
-#!/usr/bin/env node
+/**
+ * @purpose Writer tool
+ * @description Get data about a top-level docs product and output a CSV
+ */
 
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { Command } from 'commander'
 import walkFiles from '@/workflows/walk-files'
-import readFrontmatter from '@/frame/lib/read-frontmatter.js'
+import readFrontmatter from '@/frame/lib/read-frontmatter'
 import { getKustoClient } from '@/metrics/lib/kusto-client'
 import { getDates, type DateRange } from '@/metrics/lib/dates'
 import { getViews } from '@/metrics/queries/views'
@@ -66,7 +69,7 @@ async function main(): Promise<void> {
   for (const file of files) {
     const contents = await fs.promises.readFile(file)
     const contentPath = path.relative(ROOTDIR, file)
-    const { data } = readFrontmatter(contents)
+    const { data } = readFrontmatter(contents.toString())
     const versionString = JSON.stringify(data?.versions || {}).replaceAll('"', "'")
     const pathToQuery = getPathToQuery(file)
     // Pass null to get all versions (the default if no version is provided)
@@ -79,7 +82,7 @@ async function main(): Promise<void> {
     console.log(csvEntry)
     results.push(csvEntry)
   }
-  csvString += results.join('\n') + '\n'
+  csvString += `${results.join('\n')}\n`
 
   fs.writeFileSync(outputFile, csvString.trim(), 'utf8')
   console.log(`Done! Wrote ${outputFile}`)

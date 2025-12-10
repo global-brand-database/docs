@@ -3,11 +3,13 @@ import path from 'path'
 
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 import nock from 'nock'
+import type { Response } from 'express'
 
-import { get } from '@/tests/helpers/e2etest.js'
-import { checkCachingHeaders } from '@/tests/helpers/caching-headers.js'
-import { setDefaultFastlySurrogateKey } from '@/frame/middleware/set-fastly-surrogate-key.js'
-import archivedEnterpriseVersionsAssets from '@/archives/middleware/archived-enterprise-versions-assets.js'
+import { get } from '@/tests/helpers/e2etest'
+import { checkCachingHeaders } from '@/tests/helpers/caching-headers'
+import { setDefaultFastlySurrogateKey } from '@/frame/middleware/set-fastly-surrogate-key'
+import archivedEnterpriseVersionsAssets from '@/archives/middleware/archived-enterprise-versions-assets'
+import type { ExtendedRequest } from '@/types'
 
 function getNextStaticAsset(directory: string) {
   const root = path.join('.next', 'static', directory)
@@ -16,13 +18,13 @@ function getNextStaticAsset(directory: string) {
   return path.join(root, files[0])
 }
 
-function mockRequest(path: string, { headers }: { headers?: Record<string, string> } = {}) {
+function mockRequest(requestPath: string, { headers }: { headers?: Record<string, string> } = {}) {
   const _headers = Object.fromEntries(
     Object.entries(headers || {}).map(([key, value]) => [key.toLowerCase(), value]),
   )
   return {
-    path,
-    url: path,
+    path: requestPath,
+    url: requestPath,
     get: (header: string) => {
       return _headers[header.toLowerCase()]
     },
@@ -34,38 +36,48 @@ function mockRequest(path: string, { headers }: { headers?: Record<string, strin
 }
 
 type MockResponse = {
-  status: number
-  statusCode: number
-  json?: (payload: any) => void
-  send?: (body: any) => void
+  status: number | undefined
+  statusCode: number | undefined
+  json?: (payload: unknown) => void
+  send?: (body: unknown) => void
+  sendStatus?: (statusCode: number) => void
+  end?: () => void
   _json?: string
   _send?: string
   headers: Record<string, string>
-  set?: (key: string | Object, value: string) => void
+  set?: (key: string | object, value: string) => void
   removeHeader?: (key: string) => void
   hasHeader?: (key: string) => boolean
 }
 
 const mockResponse = () => {
   const res: MockResponse = {
-    status: 404,
-    statusCode: 404,
+    status: undefined,
+    statusCode: undefined,
     headers: {},
   }
   res.json = (payload) => {
-    res._json = payload
+    res._json = payload as string
   }
   res.send = (body) => {
     res.status = 200
     res.statusCode = 200
-    res._send = body
+    res._send = body as string
+  }
+  res.end = () => {
+    // Mock end method
+  }
+  res.sendStatus = (statusCode) => {
+    res.status = statusCode
+    res.statusCode = statusCode
+    // Mock sendStatus method
   }
   res.set = (key, value) => {
     if (typeof key === 'string') {
       res.headers[key.toLowerCase()] = value
     } else {
-      for (const [k, value] of Object.entries(key)) {
-        res.headers[k.toLowerCase()] = value
+      for (const [k, v] of Object.entries(key)) {
+        res.headers[k.toLowerCase()] = v
       }
     }
   }
@@ -74,6 +86,12 @@ const mockResponse = () => {
   }
   res.hasHeader = (key) => {
     return key in res.headers
+  }
+  // Add Express-style status method that supports chaining
+  ;(res as unknown as { status: (code: number) => MockResponse }).status = (code: number) => {
+    res.status = code
+    res.statusCode = code
+    return res
   }
   return res
 }
@@ -97,7 +115,7 @@ describe('static assets', () => {
     // This picks the first one found. We just need it to be anything
     // that actually resolves.
     const filePath = getNextStaticAsset('css')
-    const asURL = '/' + filePath.replace('.next', '_next').split(path.sep).join('/')
+    const asURL = `/${filePath.replace('.next', '_next').split(path.sep).join('/')}`
     const res = await get(asURL)
     expect(res.statusCode).toBe(200)
     checkCachingHeaders(res)
@@ -178,7 +196,12 @@ describe('archived enterprise static assets', () => {
       })
     nock('https://github.github.com')
       .get('/docs-ghes-2.3/_next/static/fourofour.css')
-      .reply(404, 'Not found', {
+      .reply(404, 'not found', {
+        'content-type': 'text/plain',
+      })
+    nock('https://github.github.com')
+      .get('/docs-ghes-3.5/assets/images/some-image.png')
+      .reply(404, 'not found', {
         'content-type': 'text/plain',
       })
     nock('https://github.github.com')
@@ -201,7 +224,11 @@ describe('archived enterprise static assets', () => {
       throw new Error('did not expect this to ever happen')
     }
     setDefaultFastlySurrogateKey(req, res, () => {})
-    await archivedEnterpriseVersionsAssets(req as any, res as any, next)
+    await archivedEnterpriseVersionsAssets(
+      req as unknown as ExtendedRequest,
+      res as unknown as Response,
+      next,
+    )
     expect(res.statusCode).toBe(200)
     checkCachingHeaders(res, false, 60)
   })
@@ -217,7 +244,11 @@ describe('archived enterprise static assets', () => {
       throw new Error('did not expect this to ever happen')
     }
     setDefaultFastlySurrogateKey(req, res, () => {})
-    await archivedEnterpriseVersionsAssets(req as any, res as any, next)
+    await archivedEnterpriseVersionsAssets(
+      req as unknown as ExtendedRequest,
+      res as unknown as Response,
+      next,
+    )
     expect(res.statusCode).toBe(200)
     checkCachingHeaders(res, false, 60)
   })
@@ -233,7 +264,11 @@ describe('archived enterprise static assets', () => {
       throw new Error('did not expect this to ever happen')
     }
     setDefaultFastlySurrogateKey(req, res, () => {})
-    await archivedEnterpriseVersionsAssets(req as any, res as any, next)
+    await archivedEnterpriseVersionsAssets(
+      req as unknown as ExtendedRequest,
+      res as unknown as Response,
+      next,
+    )
     expect(res.statusCode).toBe(200)
     checkCachingHeaders(res, false, 60)
   })
@@ -250,8 +285,11 @@ describe('archived enterprise static assets', () => {
       nexted = true
     }
     setDefaultFastlySurrogateKey(req, res, next)
-    await archivedEnterpriseVersionsAssets(req as any, res as any, next)
-    expect(res.statusCode).toBe(404)
+    await archivedEnterpriseVersionsAssets(
+      req as unknown as ExtendedRequest,
+      res as unknown as Response,
+      next,
+    )
     // It didn't exit in that middleware but called next() to move on
     // with any other middlewares.
     expect(nexted).toBe(true)
@@ -269,9 +307,107 @@ describe('archived enterprise static assets', () => {
       nexted = true
     }
     setDefaultFastlySurrogateKey(req, res, () => {})
-    await archivedEnterpriseVersionsAssets(req as any, res as any, next)
+    await archivedEnterpriseVersionsAssets(
+      req as unknown as ExtendedRequest,
+      res as unknown as Response,
+      next,
+    )
     // It tried to go via the proxy, but it wasn't there, but then it
     // tried "our disk" and it's eventually there.
     expect(nexted).toBe(true)
   })
+
+  describe.each([
+    {
+      name: 'Next.js chunk assets from archived enterprise referrer (legacy format)',
+      path: '/_next/static/chunks/9589-81283b60820a85f5.js',
+      referrer: '/en/enterprise/3.5/authentication/connecting-to-github-with-ssh',
+      expectStatus: 204,
+      shouldCallNext: false,
+    },
+    {
+      name: 'Next.js chunk assets from archived enterprise referrer (new format)',
+      path: '/_next/static/chunks/pages/[versionId]-40812da083876691.js',
+      referrer: '/en/enterprise-server@3.5/authentication/connecting-to-github-with-ssh',
+      expectStatus: 204,
+      shouldCallNext: false,
+    },
+    {
+      name: 'Next.js build manifest from archived enterprise referrer',
+      path: '/_next/static/NkhGE2zLVuDHVh7pXdtVC/_buildManifest.js',
+      referrer: '/enterprise-server@3.5/admin/configuration',
+      expectStatus: 204,
+      shouldCallNext: false,
+    },
+  ])(
+    'should return $expectStatus for $name',
+    ({ name, path: testPath, referrer, expectStatus, shouldCallNext }) => {
+      test(name, async () => {
+        const req = mockRequest(testPath, {
+          headers: {
+            Referrer: referrer,
+          },
+        })
+        const res = mockResponse()
+        let nexted = false
+        const next = () => {
+          if (!shouldCallNext) {
+            throw new Error('should not call next() for suppressed assets')
+          }
+          nexted = true
+        }
+        setDefaultFastlySurrogateKey(req, res, () => {})
+        await archivedEnterpriseVersionsAssets(
+          req as unknown as ExtendedRequest,
+          res as unknown as Response,
+          next,
+        )
+        expect(res.statusCode).toBe(expectStatus)
+        if (shouldCallNext) {
+          expect(nexted).toBe(true)
+        }
+      })
+    },
+  )
+
+  describe.each([
+    {
+      name: 'Next.js assets from non-enterprise referrer',
+      path: '/_next/static/chunks/main-abc123.js',
+      referrer: '/en/actions/using-workflows',
+      expectStatus: undefined,
+      shouldCallNext: true,
+    },
+    {
+      name: 'non-Next.js assets from archived enterprise referrer',
+      path: '/assets/images/some-image.png',
+      referrer: '/en/enterprise-server@3.5/some/page',
+      expectStatus: undefined,
+      shouldCallNext: true,
+    },
+  ])(
+    'should not suppress $name',
+    ({ name, path: testPath, referrer, expectStatus, shouldCallNext }) => {
+      test(name, async () => {
+        const req = mockRequest(testPath, {
+          headers: {
+            Referrer: referrer,
+          },
+        })
+        const res = mockResponse()
+        let nexted = false
+        const next = () => {
+          nexted = true
+        }
+        setDefaultFastlySurrogateKey(req, res, () => {})
+        await archivedEnterpriseVersionsAssets(
+          req as unknown as ExtendedRequest,
+          res as unknown as Response,
+          next,
+        )
+        expect(nexted).toBe(shouldCallNext)
+        expect(res.statusCode).toBe(expectStatus)
+      })
+    },
+  )
 })
