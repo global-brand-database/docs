@@ -223,9 +223,15 @@ The table below shows the package managers for which SemVer is supported.
 | Gradle                | {% octicon "check" aria-label="Supported" %}              |
 | Helm                  | {% octicon "x" aria-label="Not supported" %}              |
 | Hex (Hex)             | {% octicon "check" aria-label="Supported" %}              |
+| {% ifversion dependabot-julia-support %} |
+| Julia                 | {% octicon "check" aria-label="Supported" %}              |
+| {% endif %} |
 | Maven                 | {% octicon "check" aria-label="Supported" %}              |
 | NPM and Yarn          | {% octicon "check" aria-label="Supported" %}              |
 | NuGet                 | {% octicon "check" aria-label="Supported" %}              |
+| {% ifversion dependabot-opentofu-support %} |
+| OpenTofu              | {% octicon "check" aria-label="Supported" %}              |
+| {% endif %} |
 | Pip                   | {% octicon "check" aria-label="Supported" %}              |
 | Pub                   | {% octicon "check" aria-label="Supported" %}              |
 | Swift                 | {% octicon "check" aria-label="Supported" %}              |
@@ -467,7 +473,7 @@ Change the limit on the maximum number of pull requests for version updates open
 
 When `open-pull-requests-limit` is defined:
 
-* {% data variables.product.prodname_dependabot %} opens pull requests up to the defined integer value.
+* {% data variables.product.prodname_dependabot %} opens pull requests up to the defined integer value. A large value can be set to effectively remove the open pull request limit.
 * You can temporarily disable version updates for a package manager by setting this option to zero, see [Disabling {% data variables.product.prodname_dependabot_version_updates %}](/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates#disabling-dependabot-version-updates).
 
 ## `package-ecosystem` {% octicon "versions" aria-label="Version updates only" height="24" %}
@@ -502,6 +508,9 @@ Package manager | YAML value      | Supported versions |
 | Helm Charts            | `helm`            | v3               |
 | {% endif %} |
 | Hex            | `mix`            | v1               |
+| {% ifversion dependabot-julia-support %} |
+| Julia                  | `julia`           | >=v1.10               |
+| {% endif %} |
 | elm-package    | `elm`            | v0.19            |
 | git submodule  | `gitsubmodule`   | Not applicable |
 | {% data variables.product.prodname_actions %}  | `github-actions` | Not applicable |
@@ -510,6 +519,9 @@ Package manager | YAML value      | Supported versions |
 | Maven      | `maven`          | Not applicable   |
 | npm            | `npm`            |  v7, v8, v9, v10   |
 | NuGet          | `nuget`          | {% ifversion fpt or ghec or ghes > 3.14 %}<=6.12.0{% endif %} |
+| {% ifversion dependabot-opentofu-support %} |
+| OpenTofu     | `opentofu`       | Not applicable     |
+| {% endif %} |
 | pip| `pip`            | v24.2          |
 | pip-compile | `pip`            | 7.4.1            |
 | pipenv         | `pip`            | <= 2024.4.1    |
